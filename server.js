@@ -2,6 +2,8 @@ var google = require('googleapis');
 var sheets = google.sheets('v4');
 var plus = google.plus('v1');
 var moment = require('moment-timezone');
+var Tracker = require('./tracker.js');
+var tracker = new Tracker();
 var userName;
 var dataDeets;
 
@@ -95,53 +97,42 @@ app.get('/app',
 //TODO: Sleeping and Waking-Up can use the same endpoint...
 //TODO: Tabs
 app.get('/updatesheet', function(req, res){
-  const ranges = {
-    sleeping(topRight=2, bottomLeft=33){
-      return `C${topRight}:D${bottomLeft}`;
-    },
-    waking(topRight=2, bottomLeft=33){
-      return `E${topRight}:F${bottomLeft}`;
-    } 
-  }
-  const request = {
-    // The ID of the spreadsheet to retrieve data from.
-    spreadsheetId: process.env.SHEET_KEY,
-    // The A1 notation of the values to retrieve.
-    range: ranges[req.query.type](), 
-    auth: oauth2Client
-  };
-  sheets.spreadsheets.values.get(request, function(err, response) {
-    if (err) {
-      console.log("Something went wrong...")
-      res.send('fail')
-    } else {
-      const data = response.values;
-      const appendIndex = data.length + 2;
-      const currMoment = moment().tz('America/New_York');
-      const currDate = currMoment.format('MM/DD/YYYY');
-      const currTime = currMoment.format('hh:MM:SS a');
-      const request = {
-        spreadsheetId: process.env.SHEET_KEY,
-        auth: oauth2Client,
-        range: ranges[req.query.type](appendIndex, appendIndex),
-        valueInputOption: 'USER_ENTERED',
-        resource: {
-          values:[
-            [currDate,currTime]
-          ]
-        }
-      }
-      sheets.spreadsheets.values.update(request, function(err, response){
-        if(err){
-          console.log(err);
-          res.send('fail')
-        } else {
-          res.send('success');
-        }
-      })
+  tracker.retrieveRows(req.query.type, process.env.SHEET_KEY, oauth2Client)
+    .then((data) => {
+      console.log(data)
+      res.send('success');
+    })
+    .catch((e) => {
+      console.log(e);
+      res.send('fail');
+    });
+//       const data = response.values;
+//       const appendIndex = data.length + 2;
+//       const currMoment = moment().tz('America/New_York');
+//       const currDate = currMoment.format('MM/DD/YYYY');
+//       const currTime = currMoment.format('hh:MM:SS a');
+//       const request = {
+//         spreadsheetId: process.env.SHEET_KEY,
+//         auth: oauth2Client,
+//         range: ranges[req.query.type](appendIndex, appendIndex),
+//         valueInputOption: 'USER_ENTERED',
+//         resource: {
+//           values:[
+//             [currDate,currTime]
+//           ]
+//         }
+//       }
+//       sheets.spreadsheets.values.update(request, function(err, response){
+//         if(err){
+//           console.log(err);
+//           res.send('fail')
+//         } else {
+//           res.send('success');
+//         }
+//       })
       
-    }
-  });
+//     }
+//   });
 });
 
 
