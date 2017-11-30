@@ -75,15 +75,15 @@ app.get('/login/google/return', function(req, res) {
 app.get('/setcookie',
   function(req, res) {
     res.cookie('google-auth', new Date());
-    res.redirect('/success');
+    res.redirect('/app');
   }
 );
 
 // if cookie exists, success. otherwise, user is redirected to index
-app.get('/success',
+app.get('/app',
   function(req, res) {
     if(req.cookies['google-auth']) {
-      res.sendFile(__dirname + '/views/success.html');
+      res.sendFile(__dirname + '/views/app.html');
     } else {
       res.redirect('/');
     }
@@ -94,7 +94,7 @@ app.get('/success',
 //TODO: Package up ranges, time logic in an object
 //TODO: Sleeping and Waking-Up can use the same endpoint...
 //TODO: Tabs
-app.get('/sleeping', function(req, res){
+app.get('/updatesheet', function(req, res){
   const ranges = {
     sleeping(topRight=2, bottomLeft=33){
       return `C${topRight}:D${bottomLeft}`;
