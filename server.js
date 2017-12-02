@@ -92,10 +92,12 @@ app.get('/app',
   }
 );
 
-//TODO: Tabs
 app.get('/updatesheet', function(req, res){
   tracker.retrieveRows(req.query.type, process.env.SHEET_KEY, oauth2Client)
     .then((data) => {
+      if(!data){
+        data = []; //No data instead of undefined
+      }
       return tracker.appendTimeStamp(req.query.type, data, process.env.SHEET_KEY, oauth2Client);
     })
     .then(() => {
@@ -106,7 +108,6 @@ app.get('/updatesheet', function(req, res){
       res.sendStatus(400); //bad request
     });
 });
-
 
 // listen for requests :)
 var listener = app.listen(process.env.PORT, function() {

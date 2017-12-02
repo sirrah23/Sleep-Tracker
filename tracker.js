@@ -4,23 +4,22 @@ const moment = require('moment-timezone');
 
 function Tracker(){
   this.ranges = {
-    sleeping: function(topRight=2, bottomLeft=33){
+    sleeping: function(topRight, bottomLeft){
       return `C${topRight}:D${bottomLeft}`;
     },
-    waking: function(topRight=2, bottomLeft=33){
+    waking: function(topRight, bottomLeft){
       return `E${topRight}:F${bottomLeft}`;
     } 
   };
   
   this.retrieveRows = function(type, sheetId, oauthClient){
-    if(type !== 'sleeping' && type !== 'waking'){
-      throw new Error('Invalid type - type must be either \'sleeping\' or \'waking\'');
-    }
+    const range = this.computeSheetIndex(type);
     const request = {
       spreadsheetId: sheetId,
-      range: this.ranges[type](), 
+      range,
       auth: oauthClient
     };
+    console.log(request.range);
     return new Promise((resolve, reject) => {
       sheets.spreadsheets.values.get(request, function(err, response) {
         if (err) {
@@ -42,10 +41,11 @@ function Tracker(){
     const currTime = currMoment.format('hh:mm:ss a');
     console.log(currTime);
     //Build the API request
+    const range = this.computeSheetIndex(type, appendIndex, appendIndex);
     const request = {
       spreadsheetId: sheetId,
+      range,
       auth: oauthClient,
-      range: this.ranges[type](appendIndex, appendIndex),
       valueInputOption: 'USER_ENTERED',
       resource: {
         values:[
@@ -53,6 +53,7 @@ function Tracker(){
         ]
       }
     };
+    console.log(request.range);
     //Tell Google to append the timestamp to the sheet
     return new Promise((resolve, reject) => {
       sheets.spreadsheets.values.update(request, function(err, response){
@@ -62,6 +63,20 @@ function Tracker(){
           resolve();
       });
     });
+  }
+  
+  //A tab in the sheet will havet he format <Month>-<Year>
+  this.getCurrentSheetTab = function(){
+    const currMoment = moment().tz('America/New_York');
+    return currMoment.format('MMMM-YYYY');
+  };
+  
+  //Return <Sheet>!<Index> i.e. syntax for accessing cells in Google Sheets
+  this.computeSheetIndex = function(type, topLeft=2, bottomRight=33){
+    if(type !== 'sleeping' && type !== 'waking'){
+      throw new Error('Invalid type - type must be either \'sleeping\' or \'waking\'');
+    }
+    return `'${this.getCurrentSheetTab()}'!${this.ranges[type](topLeft, bottomRight)}`
   }
 }
 
