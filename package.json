@@ -14,7 +14,9 @@
     "express-session": "^1.15.1",
     "googleapis": "*",
     "moment": "^2.19.2",
-    "moment-timezone": "^0.5.14"
+    "moment-timezone": "^0.5.14",
+    "node-csv": "^0.1.2",
+    "uuid": "^3.1.0"
   },
   "engines": {
     "node": "6.9.1"
