@@ -3,7 +3,6 @@ var sheets = google.sheets('v4');
 var plus = google.plus('v1');
 var Tracker = require('./tracker.js');
 var tracker = new Tracker();
-console.log(tracker);
 //var userName;
 //var dataDeets;
 
