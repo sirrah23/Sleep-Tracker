@@ -1,6 +1,7 @@
 const google = require('googleapis');
 const sheets = google.sheets('v4');
 const moment = require('moment-timezone');
+const plus = google.plus('v1');
 
 function Tracker(){
   this.ranges = {
@@ -78,7 +79,21 @@ function Tracker(){
     }
     return `'${this.getCurrentSheetTab()}'!${this.ranges[type](topLeft, bottomRight)}`
   }
+  
+  this.getCurrentUserId = function(oauthClient){
+    return new Promise((resolve, reject) => {
+      plus.people.get({
+        userId: 'me',
+        auth: oauthClient
+      }, function(err, res){
+        if(err){
+          reject(err);
+        } else {
+          resolve(res.id);
+        }
+      });
+    })
+  } 
 }
-
 
 module.exports = Tracker;

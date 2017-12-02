@@ -1,19 +1,26 @@
 var google = require('googleapis');
 var sheets = google.sheets('v4');
 var plus = google.plus('v1');
+
+//TODO: Make this cleaner
 var Tracker = require('./tracker.js');
 var tracker = new Tracker();
-//var userName;
-//var dataDeets;
+
+//TODO: Make this cleaner
+var Storage = require('./storage.js');
+var storage = new Storage('users');
 
 // Environment variables that we set after obtaining them from the Google console
 var clientID = process.env.CLIENT_ID;
 var clientSecret = process.env.CLIENT_SECRET;
+
 // The URL that the Google will redirect to after it attempts to authenticate the user
 var callbackURL = 'https://'+process.env.PROJECT_DOMAIN+'.glitch.me/login/google/return';
+
 // We are asking Google for permission to use Sheets and Plus
 var scopes = ['https://www.googleapis.com/auth/spreadsheets',
               'https://www.googleapis.com/auth/plus.login'];
+
 // Create the oauth client + the return URL after authentication is attempted
 var oauth2Client = new google.auth.OAuth2(clientID, clientSecret, callbackURL);
 
@@ -84,7 +91,20 @@ app.get('/setcookie',
 app.get('/app',
   function(req, res) {
     if(req.cookies['google-auth']) {
-      res.sendFile(__dirname + '/views/app.html');
+      tracker.getCurrentUserId(oauth2Client)
+      .then((userid) => {
+        return storage.read(userid);
+      })
+      .then((userdata) => {
+         if(userdata.length === 0){
+           console.log('No data for user')  
+         }
+         res.sendFile(__dirname + '/views/app.html');
+      })
+      .catch((err) => {
+        console.log(err);
+        res.redirect('/');
+      })
     } else {
       res.redirect('/');
     }
