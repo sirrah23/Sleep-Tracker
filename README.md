@@ -1,8 +1,6 @@
 Google Sheets
 ===============
-A sample app that authenticates with, and gets data from, the Google Sheets API.
-
-![](https://cdn.glitch.com/649d5871-e041-4e46-8908-9ff392db5968%2FgoogleSheetsGIF.gif?1493932296981)
+A sample app that authenticates with, gets data from, and posts data to the Google Sheets API.
 
 ## Getting Set Up
 - You will need to [create an app](https://console.developers.google.com/apis/dashboard) and enable the Google Sheets and Google Plus APIs.
