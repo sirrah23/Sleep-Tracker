@@ -20,25 +20,53 @@ function Storage(filename){
     }
   }
   
-  //TODO: Implement other kinds of reads
-  this.read = function(user){
+  //TODO: Merge readByUserId and readByUUID (almost identical)
+  this.readByUserId = function(userid){
     return new Promise((resolve, reject)=>{
       csv.mapFile(this.computeFilename(), function(err, data){
         if(err){
           reject(err);
           return;
         }
-        if(!user){ //Caller wants all the data
+        if(!userid){ //Caller wants all the data
           resolve(data);  
           return''
         }
-        resolve(data.filter((d) => d.userid === user));
+        resolve(data.filter((d) => d.userid === userid));
       });
     });
   }
   
-  //Call upon creation
-  this.existsElseCreate();
+  this.readByUUID = function(uuid){
+    return new Promise((resolve, reject)=>{
+      csv.mapFile(this.computeFilename(), function(err, data){
+        if(err){
+          reject(err);
+          return;
+        }
+        if(!uuid){ //Caller wants all the data
+          resolve(data);  
+          return;
+        }
+        resolve(data.filter((d) => d.uuid === uuid));
+      });
+    });
+  }
+  
+  this.write = function(userId, sheetId){
+    const filename = this.computeFilename();
+    return new Promise((resolve, reject) => {
+      const uuid = uuidv1(); //Generate Id for new entry
+      const data = [uuid, userId, sheetId].join(',') + '\n';
+      fs.appendFileSync(filename, data)
+      resolve(uuid);
+    });
+  }
+
+  this.initDB = function(){
+    this.existsElseCreate();  
+  }
+  
 }
 
 module.exports = Storage;
