@@ -1,11 +1,11 @@
 var google = require('googleapis');
 
 //TODO: Make this cleaner
-var Tracker = require('./tracker.js');
+var Tracker = require('./backend/tracker.js');
 var tracker = new Tracker();
 
 //TODO: Make this cleaner
-var Storage = require('./storage.js');
+var Storage = require('./backend/storage.js');
 var storage = new Storage('users');
 storage.initDB();
 
