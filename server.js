@@ -168,6 +168,23 @@ app.post('/submitsheet', function(req, res){
   })
 });
 
+app.get('/clearsheet', function(req, res){
+   tracker.getCurrentUserId(oauth2Client)
+  .then((userId) => {
+    return storage.removeUserId(userId)
+  })
+  .then((success) => {
+    if(success)
+      res.redirect('/app') //Redirect to the sheet id entry form
+    else
+      throw 'Could not delete user data...'
+   })
+  .catch((e) => {
+    console.log(e);
+     res.sendStatus(500);
+   });
+});
+
 // listen for requests :)
 var listener = app.listen(process.env.PORT, function() {
   console.log('Your app is listening on port ' + listener.address().port);
