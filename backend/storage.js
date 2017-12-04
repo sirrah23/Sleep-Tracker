@@ -13,10 +13,14 @@ function Storage(filename){
     return `${path.resolve(this.data_dir,this.filename)}.${this.storage_format}`
   }
   
+  this.overwriteWithHeader = function(filename){
+    fs.writeFileSync(filename, this.headers.join(',')+'\n');
+  }
+  
   this.existsElseCreate = function(){
     const filename = this.computeFilename();
     if(!fs.existsSync(filename)){
-      fs.writeFileSync(filename, this.headers.join(',')+'\n');
+      this.overwriteWithHeader();
     }
   }
   
@@ -53,6 +57,34 @@ function Storage(filename){
     });
   }
   
+  //Super inefficient user id removal where we just erase the whole file
+  //and rewrite to it without the data we wanted to remove
+  //TODO: Optimize this
+  this.removeUserId = function(userid){
+    return this.readByUUID()
+      .then((data) => {
+        return new Promise((resolve, reject) => {
+          resolve(data.filter((d) => d.userid !== userid))
+        })
+      })
+      .then((newData) => {
+        return new Promise((resolve, reject) => {
+          const reducer = (acc, curr) => acc += `${curr.uuid},${curr.userid},${curr.sheet_key}\n`;
+          const newCSV = newData.reduce(reducer, "")
+          const filename = this.computeFilename()
+          this.overwriteWithHeader(filename);
+          fs.appendFileSync(filename, newCSV);
+          resolve(true);
+        })
+      })
+      .catch((err) => {
+        return new Promise((resolve, reject) => {
+          console.log(err);
+          resolve(false);
+        })
+      });
+  }
+  
   this.write = function(userId, sheetId){
     const filename = this.computeFilename();
     return new Promise((resolve, reject) => {
@@ -62,7 +94,7 @@ function Storage(filename){
       resolve(uuid);
     });
   }
-
+  
   this.initDB = function(){
     this.existsElseCreate();  
   }
